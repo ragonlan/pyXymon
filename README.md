@@ -16,8 +16,16 @@ x.say("test text")
 x.colorLine('yellow',"line status")
 x.send()
 
-
+# rrd file name will be test.rrd
 xg=XymonGraph(test='test', server='xymon1.server.priv', host='pru.server.priv')
+xg.insert(51, 'ds0')
+#xg.show()
+xg.send()
+```
+
+```python
+# rrd file name become test,side1.rrd
+xg=XymonGraph(test='test', server='xymon1.server.priv', host='pru.server.priv', rrdname='side1') 
 xg.insert(51, 'ds0')
 #xg.show()
 xg.send()

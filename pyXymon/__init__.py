@@ -57,19 +57,21 @@ class Xymon(object):
         self.lifetime = lifetime
 
     @classmethod
-    def guessFile(self):
+    def guessCfgFile(self):
         """guess witch is the configuration file"""
         cfgfiles = ('/etc/xymon/xymonclient.cfg', '/etc/xymon/xymonserver.cfg','/etc/hobbit/xymonclient.cfg','/etc/hobbit/hobbitclient.cfg')
         for f in cfgfiles:
             if os.path.exists(f):
                 return f
+
     @classmethod
     def LoadConf(self, file=None, vars={}):
         """ Return a dictionary with all variables defined in xymon configuration """
         if file is None:
-            file = Xymon.guessFile()
+            file = Xymon.guessCfgFile()
             logging.debug('configfile detected: {0}'.format(file))
         varpattern = re.compile('^\$(\w+)(.*)')  # Only varible occurrence at the begining
+
         for line in open(file, 'r').readlines():
             li = line.strip().partition('#')[0]
             if li:
@@ -78,25 +80,29 @@ class Xymon(object):
                     varname = parts[0]
                     content = parts[1]
                     content = content.strip("\" \t")
-                    logging.debug("{0} {1} {2}".format(file, varname, content))
+
                     if content.startswith('$'):
                         refname = varpattern.match(content).group(1)
                         rest = varpattern.match(content).group(2)
                         if refname in vars:
                             vars[varname] =  vars[refname] + rest
+                            logging.debug("{0} {1} <<<{2}>>>".format(file, varname, vars[varname]))
                         else:
                             vars[varname] = content
+                            logging.debug("{0} {1} !!{2}!!".format(file, varname, vars[varname]))
                     else:
                         vars[varname] = content
+                        logging.debug("{0} {1} <{2}>".format(file, varname, vars[varname]))
                 elif parts[0].startswith('include'):
                     parts[0] = parts[0].strip('include ')
-                    #print(">>>>", parts[0])
-                    vars.update(self.LoadConf(parts[0], vars))
+                    logging.debug(">>>>{0}".format(parts[0]))
+                    vars.update(self.LoadConf( parts[0], vars ))
+                    logging.debug("<<<<{0}".format(parts[0]))
+        # Second pass to substitue variables referenced
         return vars
 
     def maxColor(self, color1, color2):
         """ Return most critical color"""
-        logging.debug("color1={0} {1}".format( color[color1], color[color2] ))
         if not color1 in color or not color2 in color:
             return 0
         if color[color2] > color[color1]:
