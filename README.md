@@ -3,6 +3,7 @@ Library to send message status and graf data to xymon server
 
 # Example
 
+```python
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 from pyXymon import Xymon,XymonGraph
@@ -20,3 +21,4 @@ xg=XymonGraph(test='test', server='xymon1.server.priv', host='pru.server.priv')
 xg.insert(51, 'ds0')
 #xg.show()
 xg.send()
+```
