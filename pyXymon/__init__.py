@@ -70,7 +70,7 @@ class Xymon(object):
         if file is None:
             file = Xymon.guessCfgFile()
             logging.debug('configfile detected: {0}'.format(file))
-        varpattern = re.compile('^\$(\w+)(.*)')  # Only varible occurrence at the begining
+        varpattern = re.compile('\$(\w+)(.*)')  # Only varible occurrence at the begining
 
         for line in open(file, 'r').readlines():
             li = line.strip().partition('#')[0]
@@ -78,21 +78,12 @@ class Xymon(object):
                 parts = li.split('=')
                 if len(parts) == 2:
                     varname = parts[0]
-                    content = parts[1]
-                    content = content.strip("\" \t")
-
-                    if content.startswith('$'):
-                        refname = varpattern.match(content).group(1)
-                        rest = varpattern.match(content).group(2)
-                        if refname in vars:
-                            vars[varname] =  vars[refname] + rest
-                            logging.debug("{0} {1} <<<{2}>>>".format(file, varname, vars[varname]))
-                        else:
-                            vars[varname] = content
-                            logging.debug("{0} {1} !!{2}!!".format(file, varname, vars[varname]))
-                    else:
-                        vars[varname] = content
-                        logging.debug("{0} {1} <{2}>".format(file, varname, vars[varname]))
+                    content = parts[1].strip("\" \t")
+                    try:
+                        vars[varname] = re.sub(r'\$(\w+)\b', lambda m:(vars[m.group(1)]), content)
+                        logging.debug("{0} {1} <<<{2}>>>".format(file, varname, vars[varname]))
+                    except KeyError:
+                        pass  #inner variable reference is not defined previusly.
                 elif parts[0].startswith('include'):
                     parts[0] = parts[0].strip('include ')
                     logging.debug(">>>>{0}".format(parts[0]))
