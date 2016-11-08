@@ -3,11 +3,12 @@
 from pyXymon import Xymon,XymonGraph
 import sys
 
-x = Xymon(test='test', server='xymon1.acens.priv', host='pru.server.priv')
+x = Xymon(test='test', server='xymon1.acens.priv', host='pru.server.priv', debug=False)
 vars = x.LoadConf('/etc/xymon/xymonclient.cfg');
 x.green()
 x.say("test text")
-x.colorLine('yellow',"line status")
+x.colorLine('yellow',"Xymon client home is "+vars['XYMONCLIENTHOME'])
+x.red()
 x.send()
 
 

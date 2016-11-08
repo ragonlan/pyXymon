@@ -142,7 +142,8 @@ class Xymon(object):
 
     def color(self):
         """return current color"""
-        print(self.color)
+        #print(self.color)
+        return(self.color)
 
     def send(self):
         """send message status to display server"""
@@ -165,7 +166,6 @@ class Xymon(object):
             logging.debug('{0} {1} {2}'.format(self.cfgvar['BB'], self.cfgvar['BBDISP'], report))
         else:
             logging.info('{0} {1} {2}'.format(self.cfgvar['BB'], self.cfgvar['BBDISP'], report))
-
 
 class XymonGraph(Xymon):
     def __init__(self, server=None, port=1984, host=None, test='test', rrdname=None, datatype='GAUGE', min='0', max='U', heartbeat=600):
@@ -220,7 +220,7 @@ class XymonGraph(Xymon):
             for dataname, dataArray in dataDict.iteritems():
                 output += 'DS:{0}:{1}:{2}:{3}:{4}\t{5}\n'.format(dataname, dataArray[0], self.heartbeat, self.min, self.max,  dataArray[1] )
         logging.debug(output)
-        print output
+        #print output
         return output
 
     def send(self):
