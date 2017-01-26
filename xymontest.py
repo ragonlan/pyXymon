@@ -3,7 +3,7 @@
 import sys
 import os
 sys.path.insert(0, os.path.dirname(os.path.abspath(os.path.dirname(sys.argv[0]))))
-print(os.path.dirname(os.path.abspath(os.path.dirname(sys.argv[0]))))
+print(os.path.abspath(os.path.dirname(sys.argv[0])))
 from pyXymon import Xymon,XymonGraph
 
 x = Xymon(test='test', server='xymon1.acens.priv', host='pru.server.priv', debug=False)

@@ -49,9 +49,9 @@ class Xymon(object):
 
         self.cfgvar = Xymon.LoadConf()
         if server is None:
-            server = cfgvar['XYMSRV']
+            server = self.cfgvar['XYMSRV']
         if host is None:
-            host = cfgvar['CLIENTHOSTNAME']
+            host = self.cfgvar['CLIENTHOSTNAME']
         self.type = type
         self.server = server
         self.port = port
@@ -66,7 +66,7 @@ class Xymon(object):
     def guessCfgFile(self):
         """guess witch is the configuration file"""
         cfgfiles = ('/etc/xymon/xymonclient.cfg', '/etc/xymon/xymonserver.cfg',
-                    '/etc/hobbit/xymonclient.cfg', '/etc/hobbit/hobbitclient.cfg')
+                    '/etc/hobbit/xymonclient.cfg', '/etc/hobbit/hobbitclient.cfg', '/etc/xymon/hobbitclient.cfg', '/etc/xymon-client/xymonclient.cfg')
         for f in cfgfiles:
             if os.path.exists(f):
                 return f
@@ -76,9 +76,7 @@ class Xymon(object):
         """ Return a dictionary with all variables defined in xymon configuration """
         if file is None:
             file = Xymon.guessCfgFile()
-            logging.debug('configfile detected: {0}'.format(file))
-        # Only varible occurrence at the begining
-        varpattern = re.compile('\$(\w+)(.*)')
+        logging.debug('configfile detected: {0}'.format(file))
 
         for line in open(file, 'r').readlines():
             li = line.strip().partition('#')[0]
@@ -90,16 +88,12 @@ class Xymon(object):
                     try:
                         vars[varname] = re.sub(
                             r'\$(\w+)\b', lambda m: (vars[m.group(1)]), content)
-                        logging.debug("{0} {1} <<<{2}>>>".format(
-                            file, varname, vars[varname]))
                     except KeyError:
                         # inner variable reference is not defined previusly.
                         pass
                 elif parts[0].startswith('include'):
                     parts[0] = parts[0].strip('include ')
-                    logging.debug(">>>>{0}".format(parts[0]))
                     vars.update(self.LoadConf(parts[0], vars))
-                    logging.debug("<<<<{0}".format(parts[0]))
         # Second pass to substitue variables referenced
         return vars
 
@@ -212,7 +206,7 @@ class XymonGraph(Xymon):
         self.max = max
         self.heartbeat = heartbeat
         if rrdname is not None:
-            self.rrdname = rrdname.replace('/', '_')
+            self.rrdname = rrdname.replace('/', ',')
         else:
             self.rrdname = None
         if self.datatype not in validDataType:
@@ -233,14 +227,12 @@ class XymonGraph(Xymon):
         if self.rrdname is None:
             output += '[{0}.rrd]\n'.format(self.test)
         else:
-            output += '[{0},{1}.rrd]\n'.format(self.test, self.rrdname)
+            output += '[{0}.{1}.rrd]\n'.format(self.test, self.rrdname)
 
-        for rrdname, dataDict in self.data.iteritems():
-            for dataname, dataArray in dataDict.iteritems():
+        for rrdname, dataDict in self.data.items():
+            for dataname, dataArray in dataDict.items():
                 output += 'DS:{0}:{1}:{2}:{3}:{4}\t{5}\n'.format(
                     dataname, dataArray[0], self.heartbeat, self.min, self.max,  dataArray[1])
-        logging.debug(output)
-        # print output
         return output
 
     def send(self):
