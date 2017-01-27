@@ -49,7 +49,10 @@ class Xymon(object):
 
         self.cfgvar = Xymon.LoadConf()
         if server is None:
-            server = self.cfgvar['XYMSRV']
+            if self.cfgvar['HOBBITSERVERS']:
+                server = self.cfgvar['XYMSRV']
+            elif self.cfgvar['HOBBITSERVERS']:
+                server = self.cfgvar['HOBBITSERVERS']
         if host is None:
             host = self.cfgvar['CLIENTHOSTNAME']
         self.type = type
@@ -77,6 +80,8 @@ class Xymon(object):
         if file is None:
             file = Xymon.guessCfgFile()
         logging.debug('configfile detected: {0}'.format(file))
+
+        vars['HOME'] = os.environ.get('HOME')
 
         for line in open(file, 'r').readlines():
             li = line.strip().partition('#')[0]
