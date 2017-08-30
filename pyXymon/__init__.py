@@ -49,10 +49,11 @@ class Xymon(object):
 
         self.cfgvar = Xymon.LoadConf()
         if server is None:
-            if self.cfgvar['HOBBITSERVERS']:
+            if 'XYMSRV' in  self.cfgvar:
                 server = self.cfgvar['XYMSRV']
-            elif self.cfgvar['HOBBITSERVERS']:
+            elif 'HOBBITSERVERS' in  self.cfgvar:
                 server = self.cfgvar['HOBBITSERVERS']
+
         if host is None:
             host = self.cfgvar['CLIENTHOSTNAME']
         self.type = type
