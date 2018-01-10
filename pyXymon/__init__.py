@@ -11,7 +11,7 @@ FORMAT = '%(asctime)-15s %(name)s [%(process)d] %(levelname)s: %(message)s'
 #logging.basicConfig(stream=sys.stderr, level=logging.INFO, format=FORMAT)
 pp = pprint.PrettyPrinter(indent=2)
 
-__version__ = '0.0.1'
+__version__ = '0.0.2'
 
 color = {
     'blue': 5,
@@ -24,7 +24,43 @@ color = {
 
 validDataType = ('GAUGE', 'COUNTER', 'DERIVE',
                  'DCOUNTER', 'DDERIVE', 'ABSOLUTE')
+# some external functions...
+def guessCfgFile():
+    """guess witch is the configuration file"""
+    cfgfiles = ('/etc/xymon/xymonclient.cfg', '/etc/xymon/xymonserver.cfg',
+                '/etc/hobbit/xymonclient.cfg', '/etc/hobbit/hobbitclient.cfg', '/etc/xymon/hobbitclient.cfg', '/etc/xymon-client/xymonclient.cfg')
+    for f in cfgfiles:
+        if os.path.exists(f):
+            return f
 
+def LoadConf(file=None, vars={}):
+  """ Return a dictionary with all variables defined in xymon configuration """
+  if file is None:
+    file = guessCfgFile()
+    logging.debug('configfile detected: {0}'.format(file))
+
+  vars['HOME'] = os.environ.get('HOME')
+
+  for line in open(file, 'r').readlines():
+    li = line.strip().partition('#')[0]
+    if li:
+      parts = li.split('=')
+      if len(parts) == 2:
+        varname = parts[0]
+        content = parts[1].strip("\" \t")
+        try:
+          vars[varname] = re.sub(
+                           r'\$(\w+)\b', lambda m: (vars[m.group(1)]), content)
+        except KeyError:
+          # inner variable reference is not defined previusly.
+          pass
+      elif parts[0].startswith('include'):
+        parts[0] = parts[0].strip('include ')
+        vars.update(LoadConf(parts[0], vars))
+        # Second pass to substitue variables referenced
+  #pp = pprint.PrettyPrinter(indent=4)
+  #pp.pprint(vars)
+  return vars
 
 class Xymon(object):
     """docstring for ."""
@@ -67,42 +103,9 @@ class Xymon(object):
         self.lifetime = lifetime
 
     @classmethod
-    def guessCfgFile(self):
-        """guess witch is the configuration file"""
-        cfgfiles = ('/etc/xymon/xymonserver.cfg', '/etc/xymon/xymonclient.cfg',
-                    '/etc/hobbit/xymonclient.cfg', '/etc/hobbit/hobbitclient.cfg',
-                    '/etc/xymon/hobbitclient.cfg', '/etc/xymon-client/xymonclient.cfg')
-        for f in cfgfiles:
-            if os.path.exists(f):
-                return f
-
-    @classmethod
     def LoadConf(self, file=None, vars={}):
         """ Return a dictionary with all variables defined in xymon configuration """
-        if file is None:
-            file = Xymon.guessCfgFile()
-        logging.debug('configfile detected: {0}'.format(file))
-
-        vars['HOME'] = os.environ.get('HOME')
-
-        for line in open(file, 'r').readlines():
-            li = line.strip().partition('#')[0]
-            if li:
-                parts = li.split('=')
-                if len(parts) == 2:
-                    varname = parts[0]
-                    content = parts[1].strip("\" \t")
-                    try:
-                        vars[varname] = re.sub(
-                            r'\$(\w+)\b', lambda m: (vars[m.group(1)]), content)
-                    except KeyError:
-                        # inner variable reference is not defined previusly.
-                        pass
-                elif parts[0].startswith('include'):
-                    parts[0] = parts[0].strip('include ')
-                    vars.update(self.LoadConf(parts[0], vars))
-        # Second pass to substitue variables referenced
-        return vars
+        return LoadConf(file=None, vars={})
 
     def maxColor(self, color1, color2):
         """ Return most critical color"""
