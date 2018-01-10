@@ -7,7 +7,7 @@ print(os.path.abspath(os.path.dirname(sys.argv[0])))
 from pyXymon import Xymon,XymonGraph
 
 x = Xymon(test='test', server='xymon1.acens.priv', host='pru.server.priv', debug=False)
-#vars = x.LoadConf('/etc/xymon/xymonclient.cfg');
+#vars = LoadConf('/etc/xymon/xymonclient.cfg');
 x.green()
 x.say("test text")
 #x.colorLine('yellow',"Xymon client home is "+vars['XYMONCLIENTHOME'])
