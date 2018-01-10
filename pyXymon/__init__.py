@@ -27,8 +27,9 @@ validDataType = ('GAUGE', 'COUNTER', 'DERIVE',
 # some external functions...
 def guessCfgFile():
     """guess witch is the configuration file"""
-    cfgfiles = ('/etc/xymon/xymonclient.cfg', '/etc/xymon/xymonserver.cfg',
-                '/etc/hobbit/xymonclient.cfg', '/etc/hobbit/hobbitclient.cfg', '/etc/xymon/hobbitclient.cfg', '/etc/xymon-client/xymonclient.cfg')
+    cfgfiles = ('/etc/xymon/xymonserver.cfg', '/etc/xymon/xymonclient.cfg',
+                '/etc/hobbit/xymonclient.cfg', '/etc/hobbit/hobbitclient.cfg',
+                '/etc/xymon/hobbitclient.cfg', '/etc/xymon-client/xymonclient.cfg')
     for f in cfgfiles:
         if os.path.exists(f):
             return f
