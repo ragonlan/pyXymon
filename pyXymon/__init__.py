@@ -228,7 +228,8 @@ class XymonGraph(Xymon):
         if datatype not in validDataType:
             raise ValueError(
                 'invalid datatype parameter "{0}"'.format(datatype))
-        self.data[self.rrdname] = dict()
+        if not self.rrdname in self.data:
+            self.data[self.rrdname] = dict()
         self.data[self.rrdname][dataname] = [datatype, dataval]
         logging.debug('rrdname={0}:dataname={1} dataval={2} datatype={3}'.format(
             self.datatype, dataname, dataval, datatype))
